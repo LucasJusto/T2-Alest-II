@@ -5,11 +5,10 @@ import java.io.FileNotFoundException;
 public class Grafo{
 	private Lista castelos = new Lista();	
 	private int maxCastelos;
-	private int jeitos;
 	int soldados;
+	ArrayList<Integer> caminho = new ArrayList<Integer>();
 	public Grafo(String a) throws FileNotFoundException{
 		this.maxCastelos=0;
-		this.jeitos=1;
 		File arq = new File(a);
 		Scanner in = new Scanner(arq);
 		Castelo principal = new Castelo(0,in.nextInt()-50);
@@ -42,8 +41,8 @@ public class Grafo{
 	}
 	public Lista getCastelos(){return castelos;}
 	public int getMaxCastelos(){return maxCastelos;}
-	public int getJeitos(){return jeitos;}
-	public void calculaMaxCastelos(Castelo c){
+	public ArrayList<Integer> getCaminho(){return caminho;}
+	public void calculaMaxCastelos(Castelo c,ArrayList<Integer> caminhoAtual){
 		for(int i=0;i<c.estradas.size();i++){
 			Castelo teste = castelos.get(c.estradas.get(i));
 			if(!teste.conquistado){				
@@ -51,16 +50,24 @@ public class Grafo{
 				if(soldados>=soldadosNecessarios){
 					soldados-=soldadosNecessarios;
 					castelos.get(c.estradas.get(i)).conquistado=true;
-					int conquistados = qtdConquistados();
-					if(conquistados>maxCastelos)maxCastelos=conquistados;
-					else if(conquistados==maxCastelos)jeitos++;
+					caminhoAtual.add(castelos.get(c.estradas.get(i)).id);
+					int conquistados = caminhoAtual.size()-1;
+					if(conquistados>maxCastelos){
+						maxCastelos=conquistados;
+						acheiOCaminho(caminhoAtual);
+					}
 					//System.out.println(teste.id+"  "+soldados+"  "+conquistados);
-					calculaMaxCastelos(castelos.get(c.estradas.get(i)));
+					calculaMaxCastelos(castelos.get(c.estradas.get(i)),caminhoAtual);
 				}
 			}
 		}
 		c.conquistado=false;
+		caminhoAtual.remove((Integer)c.id);
 		soldados+=(c.soldados*2)+50;
+	}
+	public void acheiOCaminho(ArrayList<Integer> v){
+		caminho.clear();
+		for(Integer i:v)caminho.add(i);
 	}
 	public int qtdConquistados(){
 		int res=0;
@@ -68,31 +75,4 @@ public class Grafo{
 		return res;
 	}
 }
-
-/*
-	djikstra(Grafo g, castelo c){
-		para cada castelo v de g:
-			hashmap D[v] = infinity;
-			hashmap P[v] = null;
-		D[c] = 0;
-		lista Q = todos castelos de g;
-
-		enquanto Q.size>0:
-			c=retiramin(Q);
-
-			para cada vizinho v de c:
-				se D[c]+peso(c,v)<D[v]:
-					D[v]=D[c]+peso(c,v);
-					P[v]=c;
-	}
-
-	retiramin(lista Q, hashmap D){
-		castelo min = Q[0];
-		for(int i = 1;i<Q.size();i++){
-			if(D[Q[i]] < D[min]) min = Q[i];
-		}
-		Q.remove(min);
-		return min;
-	}
-*/
 
